@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE Map[
+<!ENTITY srs "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over">
+]>
+<Map background-color="#ffffff" srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over">
+  <Parameters>
+    <Parameter name="scale">1</Parameter>
+    <Parameter name="metatile">2</Parameter>
+    <Parameter name="name"><![CDATA[abialps]]></Parameter>
+    <Parameter name="description"><![CDATA[An poplation per square kilometre map from Andreas Binder]]></Parameter>
+    <Parameter name="bounds">-180,-85.05112877980659,180,85.05112877980659</Parameter>
+    <Parameter name="center">0,0,4</Parameter>
+    <Parameter name="format"><![CDATA[png]]></Parameter>
+    <Parameter name="minzoom">0</Parameter>
+    <Parameter name="maxzoom">22</Parameter>
+  </Parameters>
+
+
+<Style name="nopopulation-area">
+	<Rule>
+		<PolygonSymbolizer fill="#ff8c00"/>
+	</Rule>
+</Style>
+
+
+<Style name="population-area">
+	<Rule>
+		<Filter>[population_per_km2] &lt; 10</Filter>
+		<PolygonSymbolizer gamma="0" fill="#00ff00"/>
+	</Rule>
+	<Rule>
+		<Filter>[population_per_km2] &gt;= 10 and [population_per_km2] &lt; 20</Filter>
+		<PolygonSymbolizer gamma="0" fill="#00dd00"/>
+	</Rule>
+	<Rule>
+		<Filter>[population_per_km2] &gt;= 20 and [population_per_km2] &lt; 40</Filter>
+		<PolygonSymbolizer gamma="0" fill="#00cc00"/>
+	</Rule>
+	<Rule>
+		<Filter>[population_per_km2] &gt;= 40 and [population_per_km2] &lt; 80</Filter>
+		<PolygonSymbolizer gamma="0" fill="#00BB00"/>
+	</Rule>
+	<Rule>
+		<Filter>[population_per_km2] &gt;= 80 and [population_per_km2] &lt; 160</Filter>
+		<PolygonSymbolizer gamma="0" fill="#00AA00"/>
+	</Rule>
+	<Rule>
+		<Filter>[population_per_km2] &gt;= 160 and [population_per_km2] &lt; 320</Filter>
+		<PolygonSymbolizer gamma="0" fill="#009900"/>
+	</Rule>
+	<Rule>
+		<Filter>[population_per_km2] &gt;= 320 and [population_per_km2] &lt; 640</Filter>
+		<PolygonSymbolizer gamma="0" fill="#008800"/>
+	</Rule>
+	<Rule>
+		<Filter>[population_per_km2] &gt;= 640 and [population_per_km2] &lt; 1200</Filter>
+		<PolygonSymbolizer gamma="0" fill="#007700"/>
+	</Rule>
+	<Rule>
+		<Filter>[population_per_km2] &gt;= 1200 and [population_per_km2] &lt; 2400</Filter>
+		<PolygonSymbolizer gamma="0" fill="#006600"/>
+	</Rule>
+	<Rule>
+		<Filter>[population_per_km2] &gt;= 2400 and [population_per_km2] &lt; 4800</Filter>
+		<PolygonSymbolizer gamma="0" fill="#005500"/>
+	</Rule>
+	<Rule>
+		<Filter>[population_per_km2] &gt;= 4800 and [population_per_km2] &lt; 9600</Filter>
+		<PolygonSymbolizer gamma="0" fill="#004400"/>
+	</Rule>
+	<Rule>
+		<Filter>[population_per_km2] &gt;= 9600 and [population_per_km2] &lt; 19200</Filter>
+		<PolygonSymbolizer gamma="0" fill="#003300"/>
+	</Rule>
+	<Rule>
+		<Filter>[population_per_km2] &gt;= 19200 and [population_per_km2] &lt; 38400</Filter>
+		<PolygonSymbolizer gamma="0" fill="#002200"/>
+	</Rule>
+	<Rule>
+		<Filter>[population_per_km2] &gt;= 38400</Filter>
+		<PolygonSymbolizer gamma="0" fill="#001100"/>
+	</Rule>
+</Style>
+
+<Style name="population-text">
+	<Rule>
+		<TextSymbolizer size="12" placement="intererior" face-name="DejaVu Sans Book" halo-radius="1">[name] + "\n" <Format size="8"> [population_per_km2] </Format></TextSymbolizer>
+	</Rule>
+</Style>
+
+<Style name="population-line">
+	<Rule>
+		<LineSymbolizer stroke="#ffffff"/>
+	</Rule>
+</Style>
+
+<Style name="boundary-line">
+	<Rule>
+		<LineSymbolizer stroke="#ff0000"/>
+	</Rule>
+</Style>
+
+<Layer name="nopopulation-area" srs="&srs;" status="on">
+	<StyleName>nopopulation-area</StyleName>
+	<Datasource>
+		<Parameter name="type"><![CDATA[postgis]]></Parameter>
+		<Parameter name="dbname"><![CDATA[population]]></Parameter>
+		<Parameter name="key_field"><![CDATA[]]></Parameter>
+		<Parameter name="geometry_field"><![CDATA[way]]></Parameter>
+		<Parameter name="extent"><![CDATA[-20037508,-20037508,20037508,20037508]]></Parameter>
+		<Parameter name="table"><![CDATA[(SELECT DISTINCT 
+			area.way, area.way_area, area.name, Round(ST_Area(ST_Transform(area.way,3035))/1000000) as area_km2, COALESCE(area.population,point.population) as population, Round(COALESCE(area.population,point.population)::Integer/(ST_Area(ST_Transform(area.way,3035))/1000000)) as population_per_km2 FROM planet_osm_polygon as area FULL OUTER JOIN planet_osm_point as point ON st_contains(area.way,point.way) and point.place IN ('municipality','borough','suburb','city','town','village') and area.name=point.name and point.population is not null WHERE area.boundary='administrative' and area.admin_level IN ('4,''6','8') and (area.population is null and point.population is null) and Round(ST_Area(ST_Transform(area.way,3035))/1000000) > 0
+			order by area.way_area DESC) AS nopopulation_area]]>
+		</Parameter>
+	</Datasource>
+</Layer>
+
+<Layer name="population-area" srs="&srs;" status="on">
+	<StyleName>population-area</StyleName>
+	<Datasource>
+		<Parameter name="type"><![CDATA[postgis]]></Parameter>
+		<Parameter name="dbname"><![CDATA[population]]></Parameter>
+		<Parameter name="key_field"><![CDATA[]]></Parameter>
+		<Parameter name="geometry_field"><![CDATA[way]]></Parameter>
+		<Parameter name="extent"><![CDATA[-20037508,-20037508,20037508,20037508]]></Parameter>
+		<Parameter name="table"><![CDATA[(SELECT DISTINCT 
+			area.way, area.way_area, area.name, Round(ST_Area(ST_Transform(area.way,3035))/1000000) as area_km2, COALESCE(area.population,point.population) as population, Round(COALESCE(area.population,point.population)::Integer/(ST_Area(ST_Transform(area.way,3035))/1000000)) as population_per_km2 FROM planet_osm_polygon as area FULL OUTER JOIN planet_osm_point as point ON st_contains(area.way,point.way) and point.place IN ('municipality','borough','suburb','city','town','village') and area.name=point.name and point.population is not null WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and not (area.population is null and point.population is null) and Round(ST_Area(ST_Transform(area.way,3035))/1000000) > 0
+			order by area.way_area DESC) AS population_area]]>
+		</Parameter>
+	</Datasource>
+</Layer>
+
+<Layer maximum-scale-denominator="400000" name="population-line" srs="&srs;" status="on">
+	<StyleName>population-line</StyleName>
+	<Datasource>
+		<Parameter name="type"><![CDATA[postgis]]></Parameter>
+		<Parameter name="dbname"><![CDATA[population]]></Parameter>
+		<Parameter name="key_field"><![CDATA[]]></Parameter>
+		<Parameter name="geometry_field"><![CDATA[way]]></Parameter>
+		<Parameter name="extent"><![CDATA[-20037508,-20037508,20037508,20037508]]></Parameter>
+		<Parameter name="table"><![CDATA[(SELECT DISTINCT 
+			area.way, area.way_area, area.name, Round(ST_Area(ST_Transform(area.way,3035))/1000000) as area_km2, COALESCE(area.population,point.population) as population, Round(COALESCE(area.population,point.population)::Integer/(ST_Area(ST_Transform(area.way,3035))/1000000)) as population_per_km2 FROM planet_osm_polygon as area FULL OUTER JOIN planet_osm_point as point ON st_contains(area.way,point.way) and point.place IN ('municipality','borough','suburb','city','town','village') and area.name=point.name and point.population is not null WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and not (area.population is null and point.population is null) and Round(ST_Area(ST_Transform(area.way,3035))/1000000) > 0
+			order by area.way_area DESC) AS population_line]]>
+		</Parameter>
+	</Datasource>
+</Layer>
+
+<Layer name="boundary-line" srs="&srs;" status="on">
+	<StyleName>boundary-line</StyleName>
+	<Datasource>
+		<Parameter name="type"><![CDATA[postgis]]></Parameter>
+		<Parameter name="dbname"><![CDATA[population]]></Parameter>
+		<Parameter name="key_field"><![CDATA[]]></Parameter>
+		<Parameter name="geometry_field"><![CDATA[way]]></Parameter>
+		<Parameter name="extent"><![CDATA[-20037508,-20037508,20037508,20037508]]></Parameter>
+		<Parameter name="table"><![CDATA[(SELECT 
+			way 
+			FROM planet_osm_line
+			WHERE boundary='administrative' and admin_level='2' and osm_id > 0 order by admin_level DESC
+			) AS boundary_line]]>
+		</Parameter>
+	</Datasource>
+</Layer>
+
+<Layer maximum-scale-denominator="400000" name="population-text" srs="&srs;" status="on">
+	<StyleName>population-text</StyleName>
+	<Datasource>
+		<Parameter name="type"><![CDATA[postgis]]></Parameter>
+		<Parameter name="dbname"><![CDATA[population]]></Parameter>
+		<Parameter name="key_field"><![CDATA[]]></Parameter>
+		<Parameter name="geometry_field"><![CDATA[way]]></Parameter>
+		<Parameter name="extent"><![CDATA[-20037508,-20037508,20037508,20037508]]></Parameter>
+		<Parameter name="table"><![CDATA[(SELECT DISTINCT 
+			area.way, area.way_area, area.name, Round(ST_Area(ST_Transform(area.way,3035))/1000000) as area_km2, COALESCE(area.population,point.population) as population, Round(COALESCE(area.population,point.population)::Integer/(ST_Area(ST_Transform(area.way,3035))/1000000)) as population_per_km2 FROM planet_osm_polygon as area FULL OUTER JOIN planet_osm_point as point ON st_contains(area.way,point.way) and point.place IN ('municipality','borough','suburb','city','town','village') and area.name=point.name and point.population is not null WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and Round(ST_Area(ST_Transform(area.way,3035))/1000000) > 0
+			order by area.way_area DESC) AS population_text]]>
+		</Parameter>
+	</Datasource>
+</Layer>
+
+</Map>
+
