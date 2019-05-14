@@ -1,0 +1,7 @@
+node,way   admin_level  text         linear
+node,way   boundary     text         linear
+node,way   population   text         linear
+node,way   name         text         linear
+node,way   place        text         polygon
+node,way   z_order      text         int4
+way        way_area     real         linear
