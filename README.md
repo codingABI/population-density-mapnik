@@ -1,7 +1,7 @@
 # population-density-mapnik
 An map style for displaying population density with mapnik based on OpenStreetMap data.
 
-This map shows the population denstity in germany and was made from OpenStreetMap data. 
+This map shows the population density in germany and was made from OpenStreetMap data. 
 ![alt text](https://github.com/codingABI/population-density-mapnik/blob/master/population-density.png)
 ![alt text](https://github.com/codingABI/population-density-mapnik/blob/master/population-density-legend.png)
 
