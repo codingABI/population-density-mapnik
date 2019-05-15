@@ -109,8 +109,8 @@
 		<Parameter name="geometry_field"><![CDATA[way]]></Parameter>
 		<Parameter name="extent"><![CDATA[-20037508,-20037508,20037508,20037508]]></Parameter>
 		<Parameter name="table"><![CDATA[(SELECT DISTINCT 
-			area.way, area.way_area, area.name, Round(ST_Area(ST_Transform(area.way,3035))/1000000) as area_km2, COALESCE(area.population,point.population) as population, Round(COALESCE(area.population,point.population)::Integer/(ST_Area(ST_Transform(area.way,3035))/1000000)) as population_per_km2 FROM planet_osm_polygon as area FULL OUTER JOIN planet_osm_point as point ON st_contains(area.way,point.way) and point.place IN ('municipality','borough','suburb','city','town','village') and area.name=point.name and point.population is not null WHERE area.boundary='administrative' and area.admin_level IN ('4,''6','8') and (area.population is null and point.population is null) and (exists (select mulit_outer_check.osm_id from planet_osm_polygon as mulit_outer_check where mulit_outer_check.osm_id = area.osm_id group by mulit_outer_check.osm_id having count(*) = 1) or ST_Area(ST_Transform(area.way,3035))/1000000 > 90)
-			order by area.way_area DESC) AS nopopulation_area]]>
+			way, name, population_per_km2 FROM tPopulationDensity Where population_per_km2 < 0
+			) AS nopopulation_area]]>
 		</Parameter>
 	</Datasource>
 </Layer>
@@ -123,9 +123,9 @@
 		<Parameter name="key_field"><![CDATA[]]></Parameter>
 		<Parameter name="geometry_field"><![CDATA[way]]></Parameter>
 		<Parameter name="extent"><![CDATA[-20037508,-20037508,20037508,20037508]]></Parameter>
-		<Parameter name="table"><![CDATA[(SELECT DISTINCT 
-			area.way, area.way_area, area.name, Round(ST_Area(ST_Transform(area.way,3035))/1000000) as area_km2, COALESCE(area.population,point.population) as population, Round(COALESCE(area.population,point.population)::Integer/(ST_Area(ST_Transform(area.way,3035))/1000000)) as population_per_km2 FROM planet_osm_polygon as area FULL OUTER JOIN planet_osm_point as point ON st_contains(area.way,point.way) and point.place IN ('municipality','borough','suburb','city','town','village') and area.name=point.name and point.population is not null WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and not (area.population is null and point.population is null) and (exists (select mulit_outer_check.osm_id from planet_osm_polygon as mulit_outer_check where mulit_outer_check.osm_id = area.osm_id group by mulit_outer_check.osm_id having count(*) = 1) or ST_Area(ST_Transform(area.way,3035))/1000000 > 90)
-			order by area.way_area DESC) AS population_area]]>
+		<Parameter name="table"><![CDATA[(SELECT
+			way, name, population_per_km2 FROM tPopulationDensity Where population_per_km2 >= 0
+			) AS population_area]]>
 		</Parameter>
 	</Datasource>
 </Layer>
@@ -138,9 +138,9 @@
 		<Parameter name="key_field"><![CDATA[]]></Parameter>
 		<Parameter name="geometry_field"><![CDATA[way]]></Parameter>
 		<Parameter name="extent"><![CDATA[-20037508,-20037508,20037508,20037508]]></Parameter>
-		<Parameter name="table"><![CDATA[(SELECT DISTINCT 
-			area.way, area.way_area, area.name, Round(ST_Area(ST_Transform(area.way,3035))/1000000) as area_km2, COALESCE(area.population,point.population) as population, Round(COALESCE(area.population,point.population)::Integer/(ST_Area(ST_Transform(area.way,3035))/1000000)) as population_per_km2 FROM planet_osm_polygon as area FULL OUTER JOIN planet_osm_point as point ON st_contains(area.way,point.way) and point.place IN ('municipality','borough','suburb','city','town','village') and area.name=point.name and point.population is not null WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and not (area.population is null and point.population is null) and (exists (select mulit_outer_check.osm_id from planet_osm_polygon as mulit_outer_check where mulit_outer_check.osm_id = area.osm_id group by mulit_outer_check.osm_id having count(*) = 1) or ST_Area(ST_Transform(area.way,3035))/1000000 > 90)
-			order by area.way_area DESC) AS population_line]]>
+		<Parameter name="table"><![CDATA[(SELECT
+			way, name, population_per_km2 FROM tPopulationDensity Where population_per_km2 >= 0
+			) AS population_line]]>
 		</Parameter>
 	</Datasource>
 </Layer>
@@ -170,9 +170,9 @@
 		<Parameter name="key_field"><![CDATA[]]></Parameter>
 		<Parameter name="geometry_field"><![CDATA[way]]></Parameter>
 		<Parameter name="extent"><![CDATA[-20037508,-20037508,20037508,20037508]]></Parameter>
-		<Parameter name="table"><![CDATA[(SELECT DISTINCT 
-			area.way, area.way_area, area.name, Round(ST_Area(ST_Transform(area.way,3035))/1000000) as area_km2, COALESCE(area.population,point.population) as population, Round(COALESCE(area.population,point.population)::Integer/(ST_Area(ST_Transform(area.way,3035))/1000000)) as population_per_km2 FROM planet_osm_polygon as area FULL OUTER JOIN planet_osm_point as point ON st_contains(area.way,point.way) and point.place IN ('municipality','borough','suburb','city','town','village') and area.name=point.name and point.population is not null WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and (exists (select mulit_outer_check.osm_id from planet_osm_polygon as mulit_outer_check where mulit_outer_check.osm_id = area.osm_id group by mulit_outer_check.osm_id having count(*) = 1) or ST_Area(ST_Transform(area.way,3035))/1000000 > 90)
-			order by area.way_area DESC) AS population_text]]>
+		<Parameter name="table"><![CDATA[(SELECT
+			way, name, population_per_km2 FROM tPopulationDensity
+			) AS population_text]]>
 		</Parameter>
 	</Datasource>
 </Layer>
