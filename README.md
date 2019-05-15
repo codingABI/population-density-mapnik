@@ -8,15 +8,36 @@ This map shows the population denstity in germany and was made from OpenStreetMa
 
 Workflow to determine population data for boundaries:
 - Search for boundary-areas with admin_level 4, 6 or 8
-- If the boundary-area is one of more islands or exclaves (in osm terms = has more than on outer) then proceed only when the area is larger then 90 km² (Not nice, but working and necessary for Nordfriesland, Berlin,... An better soluation would be prepressing sql data)
 - If the boundary-area has an population-tag the needed data is found
-- When the boundary-area has no population-tag, search for an place-node from type "municipality","borough","suburb","city","town" or "village" within the the area which has an population-tag and the same name as the area. If such an place-node is found the population of the node is used for the boundary-area and the needed data is found too.
+- When the boundary-area has no population-tag and the boundary has no multiple outers, search for an place-node from type "municipality","borough","suburb","city","town" or "village" within the the area which has an population-tag and the same name as the area. If such an place-node is found the population of the node is used for the boundary-area and the needed data is found too.
 - With the found population data and the size for the boundary-area the population density is calculated
 - Use different shades for green for the density value
 
-The database query for this workflow looks like ([osm2pgsql-Style](population-density.style), [mapnik-XML](population-density.xml))
+Preprocessing data after osm2psql import ([osm2pgsql-Style](population-density.style), [mapnik-XML](population-density.xml))
 ```
-SELECT DISTINCT area.way, area.name, Round(COALESCE(area.population,point.population)::Integer/(ST_Area(ST_Transform(area.way,3035))/1000000)) as population_per_km2 FROM planet_osm_polygon as area FULL OUTER JOIN planet_osm_point as point ON st_contains(area.way,point.way) and point.place IN ('municipality','borough','suburb','city','town','village') and area.name=point.name and point.population is not null WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and not (area.population is null and point.population is null) and (exists (select mulit_outer_check.osm_id from planet_osm_polygon as mulit_outer_check where mulit_outer_check.osm_id = area.osm_id group by mulit_outer_check.osm_id having count(*) = 1) or ST_Area(ST_Transform(area.way,3035))/1000000 > 90) order by area.way_area DESC
+psql population -c "update planet_osm_polygon set population=NULL where population not similar to '[0-9]+';"
+
+psql population -c "update planet_osm_point set population=NULL where population not similar to '[0-9]+';"
+
+DROP Table tMulitOuter1;
+CREATE TABLE tMultiOuter1 as (SELECT area.way, area.osm_id, area.name FROM planet_osm_polygon as area WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and area.population is not null and exists (select multi_outer_check.osm_id from planet_osm_polygon as multi_outer_check where multi_outer_check.osm_id = area.osm_id group by multi_outer_check.osm_id having count(*) > 1));
+
+DROP Table tMulitOuter2;
+CREATE TABLE tMultiOuter2 as (
+SELECT area.osm_id, area.name, Sum(ST_Area(ST_Transform(area.way,3035))/1000000) as area_km2, area.population as population FROM planet_osm_polygon as area WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and area.population is not null and exists (select multi_outer_check.osm_id from planet_osm_polygon as multi_outer_check where multi_outer_check.osm_id = area.osm_id group by multi_outer_check.osm_id having count(*) > 1) group by name, osm_id, population
+);
+
+DROP TABLE tPopulationDensity;
+CREATE TABLE tPopulationDensity as (
+select tMultiOuter1.way, tMultiOuter1.name, tMultiOuter1.osm_id, Round(tMultiOuter2.population::Integer/tMultiOuter2.area_km2) as population_per_km2 from tMultiOuter1, tMultiOuter2 where tMultiOuter1.osm_id = tMultiOuter2.osm_id
+);
+
+INSERT INTO tPopulationDensity
+SELECT area.way, area.name, area.osm_id, Round(COALESCE(area.population,point.population)::Integer/(ST_Area(ST_Transform(area.way,3035))/1000000)) as population_per_km2 FROM planet_osm_polygon as area FULL OUTER JOIN planet_osm_point as point ON st_contains(area.way,point.way) and point.place IN ('municipality','borough','suburb','city','town','village') and area.name=point.name and point.population is not null WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and not (area.population is null and point.population is null) and exists (select multi_outer_check.osm_id from planet_osm_polygon as multi_outer_check where multi_outer_check.osm_id = area.osm_id group by multi_outer_check.osm_id having count(*) = 1);
+
+INSERT INTO tPopulationDensity
+SELECT area.way, area.name, area.osm_id, -1 as population_per_km2 FROM planet_osm_polygon as area where area.boundary='administrative' and area.admin_level IN ('4','6','8')  and not exists (select tPopulationDensity.osm_id from tPopulationDensity Where tPopulationDensity.osm_id = area.osm_id); 
+
 ```
 
 This should only be an demonstration how the process such OpenStreetMap data. If you really want exact and current population data, you should ask your goverment for official data.
