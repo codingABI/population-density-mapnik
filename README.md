@@ -3,16 +3,16 @@ An map style for displaying population density with mapnik based on OpenStreetMa
 
 This map shows the population denstity in germany and was made from OpenStreetMap data. 
 ![alt text](https://github.com/codingABI/population-density-mapnik/blob/master/population-density.png)
-
 ![alt text](https://github.com/codingABI/population-density-mapnik/blob/master/population-density-legend.png)
 
-Workflow to determine population data for boundaries:
+## Workflow to determine population data for boundaries:
 - Search for boundary-areas with admin_level 4, 6 or 8
 - If the boundary-area has an population-tag the needed data is found
 - When the boundary-area has no population-tag and the boundary has no multiple outers, search for an place-node from type "municipality","borough","suburb","city","town" or "village" within the the area which has an population-tag and the same name as the area. If such an place-node is found the population of the node is used for the boundary-area and the needed data is found too.
 - With the found population data and the size for the boundary-area the population density is calculated
 - Use different shades for green for the density value
 
+## Detailed data processing: 
 Import osm data with osm2pgsql to postgis database ([osm2pgsql-Style](population-density.style), [mapnik-XML](population-density.xml)) and remove population data with no number format.
 ```
 osm2pgsql -d population -r pbf --create --cache 1024 -S population-density.style -s --number-processes 1 germany-latest.osm.pbf
@@ -39,7 +39,6 @@ INSERT INTO tPopulationDensity SELECT area.way, area.name, area.osm_id, Round(CO
 Insert boundary areas without an found population-tag and mark them with the value -1
 ```
 INSERT INTO tPopulationDensity SELECT area.way, area.name, area.osm_id, -1 as population_per_km2 FROM planet_osm_polygon as area where area.boundary='administrative' and area.admin_level IN ('4','6','8')  and not exists (select tPopulationDensity.osm_id from tPopulationDensity Where tPopulationDensity.osm_id = area.osm_id); 
-
 ```
 
 This should only be an demonstration how the process such OpenStreetMap data. If you really want exact and current population data, you should ask your goverment for official data.
