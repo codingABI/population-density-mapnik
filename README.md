@@ -40,12 +40,12 @@ Create tPopulationDensity table and insert the helper tables.
 ```
 DROP TABLE tPopulationDensity;
 CREATE TABLE tPopulationDensity as (select tMultiOuter1.way, tMultiOuter1.name, tMultiOuter1.osm_id, Round(tMultiOuter2.population::Integer/tMultiOuter2.area_km2) as population_per_km2 from tMultiOuter1, tMultiOuter2 where tMultiOuter1.osm_id = tMultiOuter2.osm_id);
+
+INSERT INTO tPopulationDensity SELECT tMultiOuter3.way, tMultiOuter3.name, tMultiOuter3.osm_id, Round(tMultiOuter4.population::Integer / tMultiOuter5.area_km2) FROM tMultiOuter3,tMultiOuter4,tMultiOuter5 where tMultiOuter3.osm_id = tMultiOuter4.osm_id and tMultiOuter3.osm_id = tMultiOuter5.osm_id;
 ```
 Insert all boundary areas with one outer area and an existing population-tag on the boundary or on an place-node within the area
 ```
 INSERT INTO tPopulationDensity SELECT area.way, area.name, area.osm_id, Round(COALESCE(area.population,point.population)::Integer/(ST_Area(ST_Transform(area.way,3035))/1000000)) as population_per_km2 FROM planet_osm_polygon as area FULL OUTER JOIN planet_osm_point as point ON st_contains(area.way,point.way) and point.place IN ('municipality','borough','suburb','city','town','village') and area.name=point.name and point.population is not null WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and not (area.population is null and point.population is null) and exists (select multi_outer_check.osm_id from planet_osm_polygon as multi_outer_check where multi_outer_check.osm_id = area.osm_id group by multi_outer_check.osm_id having count(*) = 1);
-
-INSERT INTO tPopulationDensity SELECT tMultiOuter3.way, tMultiOuter3.name, tMultiOuter3.osm_id, Round(tMultiOuter4.population::Integer / tMultiOuter5.area_km2) FROM tMultiOuter3,tMultiOuter4,tMultiOuter5 where tMultiOuter3.osm_id = tMultiOuter4.osm_id and tMultiOuter3.osm_id = tMultiOuter5.osm_id;
 ```
 Insert boundary areas without an found population-tag and mark them with the value -1
 ```
