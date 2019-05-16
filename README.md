@@ -23,7 +23,7 @@ Create helper tables for boundaries with more than one outer areas, check popula
 DROP Table tMulitOuter1;
 CREATE TABLE tMultiOuter1 as (SELECT area.way, area.osm_id, area.name FROM planet_osm_polygon as area WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and area.population is not null and exists (select multi_outer_check.osm_id from planet_osm_polygon as multi_outer_check where multi_outer_check.osm_id = area.osm_id group by multi_outer_check.osm_id having count(*) > 1));
 
-DROP Table tMulitOuter2;
+DROP Table tMultiOuter2;
 CREATE TABLE tMultiOuter2 as (SELECT area.osm_id, area.name, Sum(ST_Area(ST_Transform(area.way,3035))/1000000) as area_km2, area.population as population FROM planet_osm_polygon as area WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and area.population is not null and exists (select multi_outer_check.osm_id from planet_osm_polygon as multi_outer_check where multi_outer_check.osm_id = area.osm_id group by multi_outer_check.osm_id having count(*) > 1) group by name, osm_id, population);
 
 Drop Table tMultiOuter3;
