@@ -3,7 +3,6 @@ An map style for displaying population density with mapnik based on OpenStreetMa
 
 This map shows the population density in germany and was made from OpenStreetMap data. 
 ![alt text](https://github.com/codingABI/population-density-mapnik/blob/master/population-density.png)
-![alt text](https://github.com/codingABI/population-density-mapnik/blob/master/population-density-legend.png)
 
 ## Workflow to determine population data for boundaries:
 - Search for boundary-areas with admin_level 4, 6 or 8
@@ -19,13 +18,23 @@ osm2pgsql -d population -r pbf --create --cache 1024 -S population-density.style
 psql population -c "update planet_osm_polygon set population=NULL where population not similar to '[0-9]+';"
 psql population -c "update planet_osm_point set population=NULL where population not similar to '[0-9]+';"
 ```
-Create two helper tables for boundaries with more than one outer areas, check population-tag and calculate the sum of all outer ereas.
+Create helper tables for boundaries with more than one outer areas, check population-tag and calculate the sum of all outer ereas.
 ```
 DROP Table tMulitOuter1;
 CREATE TABLE tMultiOuter1 as (SELECT area.way, area.osm_id, area.name FROM planet_osm_polygon as area WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and area.population is not null and exists (select multi_outer_check.osm_id from planet_osm_polygon as multi_outer_check where multi_outer_check.osm_id = area.osm_id group by multi_outer_check.osm_id having count(*) > 1));
 
 DROP Table tMulitOuter2;
 CREATE TABLE tMultiOuter2 as (SELECT area.osm_id, area.name, Sum(ST_Area(ST_Transform(area.way,3035))/1000000) as area_km2, area.population as population FROM planet_osm_polygon as area WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and area.population is not null and exists (select multi_outer_check.osm_id from planet_osm_polygon as multi_outer_check where multi_outer_check.osm_id = area.osm_id group by multi_outer_check.osm_id having count(*) > 1) group by name, osm_id, population);
+
+Drop Table tMultiOuter3;
+CREATE TABLE tMultiOuter3 as (SELECT area.way, area.name, area.osm_id, COALESCE(area.population,point.population) as population FROM planet_osm_polygon as area FULL OUTER JOIN planet_osm_point as point ON st_contains(area.way,point.way) and point.place IN ('municipality','borough','suburb','city','town','village') and area.name=point.name and point.population is not null WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and area.population is null and exists (select multi_outer_check.osm_id from planet_osm_polygon as multi_outer_check where multi_outer_check.osm_id = area.osm_id group by multi_outer_check.osm_id having count(*) > 1));
+
+Drop Table tMultiOuter4;
+CREATE TABLE tMultiOuter4 as (select osm_id, population, count(population) from tMultiOuter3 where population is not null group by osm_id, population having count(*) = 1);
+
+DROP Table tMultiOuter5;
+CREATE TABLE tMultiOuter5 as (SELECT tMultiOuter3.osm_id, tMultiOuter3.name, Sum(ST_Area(ST_Transform(tMultiOuter3.way,3035))/1000000) as area_km2 FROM tMultiOuter3 group by name, osm_id);
+
 ```
 Create tPopulationDensity table and insert the helper tables.
 ```
@@ -35,6 +44,8 @@ CREATE TABLE tPopulationDensity as (select tMultiOuter1.way, tMultiOuter1.name, 
 Insert all boundary areas with one outer area and an existing population-tag on the boundary or on an place-node within the area
 ```
 INSERT INTO tPopulationDensity SELECT area.way, area.name, area.osm_id, Round(COALESCE(area.population,point.population)::Integer/(ST_Area(ST_Transform(area.way,3035))/1000000)) as population_per_km2 FROM planet_osm_polygon as area FULL OUTER JOIN planet_osm_point as point ON st_contains(area.way,point.way) and point.place IN ('municipality','borough','suburb','city','town','village') and area.name=point.name and point.population is not null WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and not (area.population is null and point.population is null) and exists (select multi_outer_check.osm_id from planet_osm_polygon as multi_outer_check where multi_outer_check.osm_id = area.osm_id group by multi_outer_check.osm_id having count(*) = 1);
+
+INSERT INTO tPopulationDensity SELECT tMultiOuter3.way, tMultiOuter3.name, tMultiOuter3.osm_id, Round(tMultiOuter4.population::Integer / tMultiOuter5.area_km2) FROM tMultiOuter3,tMultiOuter4,tMultiOuter5 where tMultiOuter3.osm_id = tMultiOuter4.osm_id and tMultiOuter3.osm_id = tMultiOuter5.osm_id;
 ```
 Insert boundary areas without an found population-tag and mark them with the value -1
 ```
