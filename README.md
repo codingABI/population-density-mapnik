@@ -7,7 +7,8 @@ This map shows the population density in germany and was made from OpenStreetMap
 ## Workflow to determine population data for boundaries:
 - Search for boundary-areas with admin_level 4, 6 or 8
 - If the boundary-area has an population-tag the needed data is found
-- When the boundary-area has no population-tag and the boundary has no multiple outers, search for an place-node from type "municipality","borough","suburb","city","town" or "village" within the the area which has an population-tag and the same name as the area. If such an place-node is found the population of the node is used for the boundary-area and the needed data is found too.
+- When the boundary-area has no population-tag and the boundary has no multiple outers, search for an place-node from type "municipality","borough","suburb","city","town" or "village" within the area which has an population-tag and the same name as the area. If such an place-node is found the population of the node is used for the boundary-area and the needed data is found too.
+- When the boundary-area has no population-tag and the boundary has multiple outers, search for unique place-node from type "municipality","borough","suburb","city","town" or "village" within all outers which has an population-tag and the same name as the area. If such an place-node is found the population of the node is used for the boundary-area and the needed data is found too.
 - With the found population data and the size for the boundary-area the population density is calculated
 - Use different shades for green for the density value
 
