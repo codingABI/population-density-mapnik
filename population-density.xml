@@ -122,7 +122,7 @@
 		<Parameter name="geometry_field"><![CDATA[way]]></Parameter>
 		<Parameter name="extent"><![CDATA[-20037508,-20037508,20037508,20037508]]></Parameter>
 		<Parameter name="table"><![CDATA[(SELECT DISTINCT 
-			way, way_area, name, population_per_km2 FROM tPopulationDensity Where population_per_km2 < 0
+			way, way_area, name, population_per_km2 FROM tPopulationDensity Where population_per_km2 is null
 			order by way_area DESC) AS nopopulation_area]]>
 		</Parameter>
 	</Datasource>
@@ -137,7 +137,7 @@
 		<Parameter name="geometry_field"><![CDATA[way]]></Parameter>
 		<Parameter name="extent"><![CDATA[-20037508,-20037508,20037508,20037508]]></Parameter>
 		<Parameter name="table"><![CDATA[(SELECT
-			way, way_area, name, population_per_km2 FROM tPopulationDensity Where population_per_km2 >= 0
+			way, way_area, name, population_per_km2 FROM tPopulationDensity Where population_per_km2 is not null
 			order by way_area DESC) AS population_area]]>
 		</Parameter>
 	</Datasource>
@@ -152,7 +152,7 @@
 		<Parameter name="geometry_field"><![CDATA[way]]></Parameter>
 		<Parameter name="extent"><![CDATA[-20037508,-20037508,20037508,20037508]]></Parameter>
 		<Parameter name="table"><![CDATA[(SELECT
-			way, way_area, name, population_per_km2 FROM tPopulationDensity Where population_per_km2 >= 0
+			way, way_area, name, population_per_km2 FROM tPopulationDensity Where population_per_km2 is not null
 			order by way_area DESC) AS population_line]]>
 		</Parameter>
 	</Datasource>
