@@ -1,8 +1,8 @@
 # population-density-mapnik
 An map style for displaying population density with mapnik based on OpenStreetMap data.
 
-This map shows the population density in the OpenStreetMap germany extract (https://download.geofabrik.de/europe/germany.html). 
-![alt text](https://github.com/codingABI/population-density-mapnik/blob/master/population-density.png)
+This map shows the population density in the OpenStreetMap germany extract (https://download.geofabrik.de/europe/germany.html) and the named areas with the highest and lowest density. 
+![alt text](https://github.com/codingABI/population-density-mapnik/blob/master/population-density.png) 
 
 ## Workflow to determine population data for boundaries:
 - Search for boundary-areas with admin_level 4, 6 or 8
