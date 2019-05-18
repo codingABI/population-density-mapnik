@@ -82,6 +82,19 @@
 	</Rule>
 </Style>
 
+<Style name="population-text-minmax">
+	<Rule>
+		<Filter>[flags] = 'max'</Filter>
+		<PointSymbolizer file="marker.svg"/>
+		<TextSymbolizer dy="7" size="14" placement="intererior" face-name="DejaVu Sans Book" halo-radius="1">[name] + "\n" <Format size="10"> [population_per_km2] + "/km²"</Format></TextSymbolizer>
+	</Rule>
+	<Rule>
+		<Filter>[flags] = 'min'</Filter>
+		<PointSymbolizer file="marker.svg"/>
+		<TextSymbolizer dy="7" size="14" placement="intererior" face-name="DejaVu Sans Book" halo-radius="1">[name] + "\n" <Format size="10"> [population_per_km2] + "/km²"</Format></TextSymbolizer>
+	</Rule>
+</Style>
+
 <Style name="population-text">
 	<Rule>
 		<TextSymbolizer size="12" placement="intererior" face-name="DejaVu Sans Book" halo-radius="1">[name] + "\n" <Format size="8"> [population_per_km2] </Format></TextSymbolizer>
@@ -109,8 +122,8 @@
 		<Parameter name="geometry_field"><![CDATA[way]]></Parameter>
 		<Parameter name="extent"><![CDATA[-20037508,-20037508,20037508,20037508]]></Parameter>
 		<Parameter name="table"><![CDATA[(SELECT DISTINCT 
-			way, name, population_per_km2 FROM tPopulationDensity Where population_per_km2 < 0
-			) AS nopopulation_area]]>
+			way, way_area, name, population_per_km2 FROM tPopulationDensity Where population_per_km2 < 0
+			order by way_area DESC) AS nopopulation_area]]>
 		</Parameter>
 	</Datasource>
 </Layer>
@@ -124,8 +137,8 @@
 		<Parameter name="geometry_field"><![CDATA[way]]></Parameter>
 		<Parameter name="extent"><![CDATA[-20037508,-20037508,20037508,20037508]]></Parameter>
 		<Parameter name="table"><![CDATA[(SELECT
-			way, name, population_per_km2 FROM tPopulationDensity Where population_per_km2 >= 0
-			) AS population_area]]>
+			way, way_area, name, population_per_km2 FROM tPopulationDensity Where population_per_km2 >= 0
+			order by way_area DESC) AS population_area]]>
 		</Parameter>
 	</Datasource>
 </Layer>
@@ -139,8 +152,8 @@
 		<Parameter name="geometry_field"><![CDATA[way]]></Parameter>
 		<Parameter name="extent"><![CDATA[-20037508,-20037508,20037508,20037508]]></Parameter>
 		<Parameter name="table"><![CDATA[(SELECT
-			way, name, population_per_km2 FROM tPopulationDensity Where population_per_km2 >= 0
-			) AS population_line]]>
+			way, way_area, name, population_per_km2 FROM tPopulationDensity Where population_per_km2 >= 0
+			order by way_area DESC) AS population_line]]>
 		</Parameter>
 	</Datasource>
 </Layer>
@@ -162,6 +175,21 @@
 	</Datasource>
 </Layer>
 
+<Layer name="population-text-minmax" srs="&srs;" status="on">
+	<StyleName>population-text-minmax</StyleName>
+	<Datasource>
+		<Parameter name="type"><![CDATA[postgis]]></Parameter>
+		<Parameter name="dbname"><![CDATA[population]]></Parameter>
+		<Parameter name="key_field"><![CDATA[]]></Parameter>
+		<Parameter name="geometry_field"><![CDATA[way]]></Parameter>
+		<Parameter name="extent"><![CDATA[-20037508,-20037508,20037508,20037508]]></Parameter>
+		<Parameter name="table"><![CDATA[(SELECT
+			ST_Centroid(way) as way, way_area, name, flags, population_per_km2 FROM tPopulationDensity where flags IN ('min','max')
+			order by way_area DESC) AS population_text_minmax]]>
+		</Parameter>
+	</Datasource>
+</Layer>
+
 <Layer maximum-scale-denominator="400000" name="population-text" srs="&srs;" status="on">
 	<StyleName>population-text</StyleName>
 	<Datasource>
@@ -171,8 +199,8 @@
 		<Parameter name="geometry_field"><![CDATA[way]]></Parameter>
 		<Parameter name="extent"><![CDATA[-20037508,-20037508,20037508,20037508]]></Parameter>
 		<Parameter name="table"><![CDATA[(SELECT
-			way, name, population_per_km2 FROM tPopulationDensity
-			) AS population_text]]>
+			way, way_area, name, population_per_km2 FROM tPopulationDensity
+			order by way_area DESC) AS population_text]]>
 		</Parameter>
 	</Datasource>
 </Layer>
