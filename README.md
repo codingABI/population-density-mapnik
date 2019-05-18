@@ -14,7 +14,7 @@ This map shows the population density in the germany extract (https://download.g
 - Use different shades for green for the density value
 
 ## Detailed data processing: 
-Import osm data with osm2pgsql to postgis database ([osm2pgsql-Style](population-density.style), [mapnik-XML](population-density.xml)) and open psql.
+Import osm data with osm2pgsql to postgis database ([osm2pgsql-Style](population-density.style)) and open psql to start SQL statements. The import is time consuming and my notebook needs ~24h.
 ```
 osm2pgsql -d population -r pbf --create --cache 1024 -S population-density.style -s --number-processes 1 germany-latest.osm.pbf
 psql population
@@ -56,6 +56,6 @@ alter table tPopulationDensity add column flags varchar;
 update tPopulationDensity SET flags = 'max' where population_per_km2 = (select max(population_per_km2) from tPopulationDensity);
 update tPopulationDensity SET flags = 'min' where population_per_km2 = (select min(population_per_km2) from tPopulationDensity);
 ```
-Now you can use renderd or an [Python-Script](population-density.py) to create a map.
+Now you can use renderd or an [Python-Script](population-density.py) to create a map ([mapnik-XML](population-density.xml)).
 
 This should only be an demonstration how the process such OpenStreetMap data. If you really want exact and current population data, you should ask your goverment for official data.
