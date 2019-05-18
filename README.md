@@ -19,7 +19,7 @@ Import osm data with osm2pgsql to postgis database ([osm2pgsql-Style](population
 osm2pgsql -d population -r pbf --create --cache 1024 -S population-density.style -s --number-processes 1 germany-latest.osm.pbf
 psql population
 ```
-SQL statements to create final table tPopulationDensity
+SQL statements to create final table **tPopulationDensity**
 ```
 --Helper table 1: boundaries with multiple outers and population on boundary
 DROP Table tMultiOuterPopulationOnPoly;
