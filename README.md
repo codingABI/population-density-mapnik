@@ -51,5 +51,6 @@ INSERT INTO tPopulationDensity SELECT area.way, area.way_area, area.name, area.o
 --insert boundaries without population (= -1)
 INSERT INTO tPopulationDensity SELECT area.way, area.way_area, area.name, area.osm_id, -1 as population_per_km2 FROM planet_osm_polygon as area where area.boundary='administrative' and area.admin_level IN ('4','6','8')  and not exists (select tPopulationDensity.osm_id from tPopulationDensity Where tPopulationDensity.osm_id = area.osm_id); 
 ```
+Now you can use renderd or an [Python-Script](population-density.py) to create a map.
 
 This should only be an demonstration how the process such OpenStreetMap data. If you really want exact and current population data, you should ask your goverment for official data.
