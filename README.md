@@ -10,6 +10,7 @@ This map shows the population density in germany and was made from OpenStreetMap
 - When the boundary-area has no population-tag and the boundary has no multiple outers, search for an place-node from type "municipality","borough","suburb","city","town" or "village" within the area which has an population-tag and the same name as the area. If such an place-node is found the population of the node is used for the boundary-area and the needed data is found too.
 - When the boundary-area has no population-tag and the boundary has multiple outers, search for unique place-node from type "municipality","borough","suburb","city","town" or "village" within all outers which has an population-tag and the same name as the area. If such an place-node is found the population of the node is used for the boundary-area and the needed data is found too.
 - With the found population data and the size for the boundary-area the population density is calculated
+- Use orange for boundary-areas where no population was found
 - Use different shades for green for the density value
 
 ## Detailed data processing: 
