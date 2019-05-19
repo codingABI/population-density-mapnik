@@ -1,14 +1,14 @@
 # population-density-mapnik
-An map style for displaying population density with mapnik based on OpenStreetMap data.
+A map style for displaying population density with mapnik based on OpenStreetMap data.
 
 This map shows the population density in the OpenStreetMap germany extract (https://download.geofabrik.de/europe/germany.html) and the named areas with the highest and lowest density. 
 ![alt text](https://github.com/codingABI/population-density-mapnik/blob/master/population-density.png) 
 
 ## Workflow to determine population data for boundaries:
 - Search for boundary-areas with admin_level 4, 6 or 8
-- If the boundary-area has an population-tag the needed data is found
-- When the boundary-area has no population-tag and the boundary has no multiple outers, search for an place-node from type "municipality","borough","suburb","city","town" or "village" within the area which has an population-tag and the same name as the area. If such an place-node is found the population of the node is used for the boundary-area and the needed data is found too.
-- When the boundary-area has no population-tag and the boundary has multiple outers, search for unique place-node from type "municipality","borough","suburb","city","town" or "village" within all outers which has an population-tag and the same name as the area. If such an place-node is found the population of the node is used for the boundary-area and the needed data is found too.
+- If the boundary-area has a population-tag the needed data is found
+- When the boundary-area has no population-tag and the boundary has no multiple outers, search for a place-node from type "municipality","borough","suburb","city","town" or "village" within the area which has a population-tag and the same name as the area. If such a place-node is found the population of the node is used for the boundary-area and the needed data is found too.
+- When the boundary-area has no population-tag and the boundary has multiple outers, search for unique place-node from type "municipality","borough","suburb","city","town" or "village" within all outers which has a population-tag and the same name as the area. If such a place-node is found the population of the node is used for the boundary-area and the needed data is found too.
 - With the found population data and the size for the boundary-area the population density is calculated
 - Use orange for boundary-areas where no population was found
 - Use different shades for green for the density value
@@ -58,4 +58,4 @@ update tPopulationDensity SET flags = 'min' where population_per_km2 = (select m
 ```
 Now you can use renderd or an [Python-Script](population-density.py) to create a map ([mapnik-XML](population-density.xml)).
 
-This should only be an demonstration how the process such OpenStreetMap data. If you really want exact and current population data, you should ask your goverment for official data.
+This should only be a demonstration how the process such OpenStreetMap data. If you really want exact and current population data, you should ask your goverment for official data.
