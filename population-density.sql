@@ -32,7 +32,3 @@ INSERT INTO tPopulationDensity SELECT area.way, area.way_area, area.name, area.o
 alter table tPopulationDensity add column flags varchar;
 update tPopulationDensity SET flags = 'max' where population_per_km2 = (select max(population_per_km2) from tPopulationDensity);
 update tPopulationDensity SET flags = 'min' where population_per_km2 = (select min(population_per_km2) from tPopulationDensity);
-
---delete from tPopulationDensity as c where c.osm_id in (select a.osm_id from tPopulationDensity as a, planet_osm_polygon as b where b.osm_id=-51477 and b.way_area > 9.7e+11 and not ST_Contains(b.way,a.way));
-
-
