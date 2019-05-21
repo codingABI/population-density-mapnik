@@ -10,7 +10,7 @@ centrex=10.5
 centrey=51.3
 zoom=7
 scale=2
-attribution="population per square kilometre - Andreas Binder ©OpenStreetMap contributors ODbL (Data from 14.05.2019)"
+attribution="population per square kilometre in Germany - Andreas Binder ©OpenStreetMap contributors ODbL (State 14.05.2019)"
 
 merc = mapnik.Projection('+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over')
 
@@ -122,7 +122,7 @@ ctx.show_text("[2400-4800[")
 ctx.move_to(6 * scale + height,m.height - height*4 - 3)
 ctx.show_text(u"\u2265 4800")
 ctx.move_to(6 * scale + height,m.height - height*3 - 3)
-ctx.show_text("No population tag in osm found")
+ctx.show_text("No population tag in OpenStreetMap found")
 
 ctx.set_source_rgb(int("ff",16)/255.0,int("8c",16)/255.0,0)
 ctx.rectangle(3 * scale,m.height - height*4,height,height)
