@@ -31,13 +31,11 @@ CREATE TABLE tAreaSumKm2 as (SELECT area.osm_id, area.name, Sum(ST_Area(ST_Trans
 
 --Helper table 3: boundaries with multiple outers and no poplation on boundary, but population on node
 Drop Table tMultiOuterPopulationOnNode;
-CREATE TABLE tMultiOuterPopulationOnNode as (
-SELECT area.way, area.way_area, area.name, area.osm_id, point.population FROM planet_osm_polygon as area FULL OUTER JOIN planet_osm_point as point ON st_contains(area.way,point.way) and point.place IN ('municipality','borough','suburb','city','town','village') and area.name=point.name and point.population similar to '[0-9]+' WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and (area.population is null or  area.population not similar to '[0-9]+') and exists (select multi_outer_check.osm_id from planet_osm_polygon as multi_outer_check where multi_outer_check.osm_id = area.osm_id group by multi_outer_check.osm_id having count(*) > 1));
+CREATE TABLE tMultiOuterPopulationOnNode as (SELECT area.way, area.way_area, area.name, area.osm_id, point.population FROM planet_osm_polygon as area FULL OUTER JOIN planet_osm_point as point ON st_contains(area.way,point.way) and point.place IN ('municipality','borough','suburb','city','town','village') and area.name=point.name and point.population similar to '[0-9]+' WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and (area.population is null or  area.population not similar to '[0-9]+') and exists (select multi_outer_check.osm_id from planet_osm_polygon as multi_outer_check where multi_outer_check.osm_id = area.osm_id group by multi_outer_check.osm_id having count(*) > 1));
 
 --Helper table 4: list of unique population of boundaries with multiple outers and no poplation on boundary, but population on node
 Drop Table tMultiOuterPopulationOnUniqueNode;
-CREATE TABLE tMultiOuterPopulationOnUniqueNode as (
-select osm_id, name, population, count(population) from tMultiOuterPopulationOnNode where population similar to '[0-9]+' group by osm_id, name, population having count(*) = 1);
+CREATE TABLE tMultiOuterPopulationOnUniqueNode as (select osm_id, name, population, count(population) from tMultiOuterPopulationOnNode where population similar to '[0-9]+' group by osm_id, name, population having count(*) = 1);
 
 --Create main table and insert helper tables
 DROP TABLE tPopulationDensity;
