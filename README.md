@@ -10,7 +10,7 @@ This map shows the population density in the OpenStreetMap germany extract (http
 - When the boundary-area has no population-tag and the boundary has no multiple outers, search for a place-node from type "municipality","borough","suburb","city","town" or "village" within the area which has a population-tag and the same name as the area. If such a place-node is found the population of the node is used for the boundary-area and the needed data is found too.
 - When the boundary-area has no population-tag and the boundary has multiple outers, search for unique place-node from type "municipality","borough","suburb","city","town" or "village" within all outers which has a population-tag and the same name as the area. If such a place-node is found the population of the node is used for the boundary-area and the needed data is found too.
 - With the found population data and the size for the boundary-area the population density is calculated
-- Use orange for boundary-areas where no population was found
+- Use orange for boundary-areas with admin_level 6 or 8 and existing name and where no population was found
 - Use different shades for green for the density value
 
 ## Detailed data processing: 
