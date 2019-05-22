@@ -46,8 +46,14 @@ INSERT INTO tPopulationDensity SELECT tMultiOuterPopulationOnNode.way, tMultiOut
 --Insert all boundaries with one outer and population on boundary or node
 INSERT INTO tPopulationDensity SELECT area.way, area.way_area, area.name, area.osm_id, Round(COALESCE(area.population,point.population)::Integer/(ST_Area(ST_Transform(area.way,3035))/1000000)) as population_per_km2, COALESCE(area.population,point.population)::Integer as population, ST_Area(ST_Transform(area.way,3035))/1000000 as area_km2 FROM planet_osm_polygon as area FULL OUTER JOIN planet_osm_point as point ON st_contains(area.way,point.way) and point.place IN ('municipality','borough','suburb','city','town','village') and area.name=point.name and point.population similar to '[0-9]+' WHERE area.boundary='administrative' and area.admin_level IN ('4','6','8') and (area.population similar to '[0-9]+' or point.population similar to '[0-9]+') and exists (select multi_outer_check.osm_id from planet_osm_polygon as multi_outer_check where multi_outer_check.osm_id = area.osm_id group by multi_outer_check.osm_id having count(*) = 1);
 
---Insert boundaries without population (=null)
-INSERT INTO tPopulationDensity SELECT area.way, area.way_area, area.name, area.osm_id, null as population_per_km2, null as population, tAreaSumKm2.area_km2 FROM planet_osm_polygon as area, tAreaSumKm2 where area.boundary='administrative' and area.admin_level IN ('4','6','8') and area.osm_id = tAreaSumKm2.osm_id and not exists (select tPopulationDensity.osm_id from tPopulationDensity Where tPopulationDensity.osm_id = area.osm_id); 
+--Insert boundaries with names and admin_level 6 or 8 and without population (set to null)
+INSERT INTO tPopulationDensity SELECT area.way, area.way_area, area.name, area.osm_id, null as population_per_km2, null as population, tAreaSumKm2.area_km2 FROM planet_osm_polygon as area, tAreaSumKm2 where area.boundary='administrative' and area.admin_level IN ('6','8') and area.name is not null and area.osm_id = tAreaSumKm2.osm_id and not exists (select tPopulationDensity.osm_id from tPopulationDensity Where tPopulationDensity.osm_id = area.osm_id); 
+
+--When creating a map for a specific country, it may be a good idea to filter only areas for the country
+--DROP TABLE tPopulationDensityDE;
+--CREATE Temp TABLE tPopulationDensityDE as (select tPopulationDensity.* from tPopulationDensity, planet_osm_polygon as border where ST_Contains(border.way,tPopulationDensity.way) and border.name = 'Deutschland' and border.admin_level = '2' and border.boundary='administrative');
+--DROP TABLE tPopulationDensity;
+--CREATE TABLE tPopulationDensity as (select * from tPopulationDensityDE);
 
 --Add column for biggest and smallest population density
 alter table tPopulationDensity add column flags varchar;
