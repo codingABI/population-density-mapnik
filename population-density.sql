@@ -34,6 +34,6 @@ INSERT INTO tPopulationDensity SELECT area.way, area.way_area, area.name, area.o
 
 --Add column for biggest and smallest population density
 alter table tPopulationDensity add column flags varchar;
-update tPopulationDensity SET flags = 'max' where population_per_km2 = (select max(population_per_km2) from tPopulationDensity );
+update tPopulationDensity SET flags = 'max' where population_per_km2 = (select max(population_per_km2) from tPopulationDensity);
 update tPopulationDensity SET flags = 'min' where population_per_km2 = (select min(population_per_km2) from tPopulationDensity);
 
