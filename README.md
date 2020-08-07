@@ -62,4 +62,4 @@ update tPopulationDensity SET flags = 'min' where population_per_km2 = (select m
 ```
 Now you can use renderd or an [Python-Script](population-density.py) to create a map ([mapnik-XML](population-density.xml)).
 
-This should only be a demonstration how the process such OpenStreetMap data. If you really want exact and current population data, you should ask your goverment for official data.
+This should only be a demonstration how to process such OpenStreetMap data. If you really want exact and current population data, you should ask your goverment for official data.
